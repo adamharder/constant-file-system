@@ -20,6 +20,9 @@ thus the first 32 bytes of a maptiles file should be :
 
 
 timestamp:
+datetime.now().timestamp() -> float
+datetime.fromtimestamp(datetime.now().timestamp()) -> datetime
+
 arrow.Arrow.fromtimestamp(int(arrow.utcnow().timestamp()))
 
 to unix timestamp int: int(arrow.utcnow().timestamp())

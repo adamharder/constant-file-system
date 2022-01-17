@@ -30,7 +30,9 @@ class CFS_Bytestream(CFS_Base):
 
     @property
     def timestamp(self)->datetime:
-        return arrow.Arrow.fromtimestamp( struct.unpack("I", self._file_buffer[23:27])[0] ) #  cfs_full_content.write(struct.pack("I", int(timestamp.timestamp()))))
+        raw_ts = struct.unpack("I", self._file_buffer[23:27])[0]
+        return datetime.fromtimestamp(raw_ts)
+        # return arrow.Arrow.fromtimestamp( struct.unpack("I", self._file_buffer[23:27])[0] ) #  cfs_full_content.write(struct.pack("I", int(timestamp.timestamp()))))
 
     @property
     def content_offset(self):
@@ -52,11 +54,11 @@ class CFS_Bytestream(CFS_Base):
     def blobs(self):
         return self._manifest['blobs']
 
-    def get_mimetype(self, blob_path):
+    def get_blob_mimetype(self, blob_path):
         return self.blobs[blob_path]['mimetype']
 
-    def get_file_metadata(self, file_path):
-        return self.blobs[file_path]['metadata']
+    def get_blob_metadata(self, blob_path):
+        return self.blobs[blob_path]['metadata']
 
     def get_file(self, file_path, confirm=True):
         file_obj=self.blobs[file_path]

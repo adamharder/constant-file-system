@@ -23,7 +23,12 @@ class CFS_File(CFS_Base):
             assert b'CFS' == magic_word
 
             self._sha1 = binascii.hexlify(file_buffer.read(20))
-            self._timestamp = arrow.Arrow.fromtimestamp( struct.unpack("I", file_buffer.read(4))[0])
+
+            raw_ts = struct.unpack("I", file_buffer.read(4))[0]
+            self._timestamp = datetime.fromtimestamp(raw_ts)
+
+
+            # self._timestamp = arrow.Arrow.fromtimestamp( struct.unpack("I", file_buffer.read(4))[0])
             self._manifest_size =  struct.unpack("I", file_buffer.read(4))[0]
             manifest_bytes=file_buffer.read(self.manifest_size)
             assert(manifest_bytes[0]==ord('{'))

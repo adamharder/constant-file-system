@@ -1,5 +1,5 @@
 # from util_content_hash import content_hash
-from python.common.util_mimetype import get_mimetype, mimetypes,  validate_mimetype
+#from python.common.util_mimetype import get_mimetype, mimetypes,  validate_mimetype
 #from schemas.schema_aligned_cfs import metadata
 #from schemas.schema_floorplan_master_cfs import metadata_schema
 
@@ -14,12 +14,18 @@ from typing import List
 import datetime
 import mimetypes
 
+from cfs.cfs_base import CFS_Base
+
 #x=mimetypes.
+
+
+
+    
 
 
 class CFS_Blob(object):
     blob:bytes
-    def __init__(self, *, name:str, content:bytes, mimetype:str=None, metadata:dict=None):
+    def __init__(self, *, name:str, content:bytes, mimetype:str, metadata:dict=None):
         assert isinstance(name, str)
         assert isinstance(content, bytes)
         if mimetype is not None:
@@ -34,7 +40,7 @@ class CFS_Blob(object):
         if mimetype is not None:
             self._mimetype=mimetype
         else:
-            self._mimetype= get_mimetype(content=self._content) #"application/octet-stream"
+            self._mimetype= "application/octet-stream"
 
         self._metadata={}
 
@@ -83,10 +89,11 @@ class CFS_Builder(object):
         self._cfs_metadata={}
         if metadata is not None:
             assert isinstance(metadata, dict)
-            self._metadata=metadata
+            self._cfs_metadata=metadata
+        
 
     @staticmethod
-    def wrap(cfs:CFS):
+    def wrap(cfs:CFS_Base):
         assert False, "NOT IMPLEMENTED"
     @property
     def cfs_metadata(self)->dict:
@@ -99,8 +106,8 @@ class CFS_Builder(object):
     def get_bytes(self, name)->bytes:
         return copy.copy(self._blobs[name].content) #raises an exception
 
-    @property
-    def as_bytes(self):
+    
+    def build(self)->bytes:
         
         timestamp= datetime.datetime.now() #.isoformat() #  arrow.utcnow()
         timestamp_str=timestamp.isoformat()
@@ -129,7 +136,7 @@ class CFS_Builder(object):
         content_sha1.update(content_block.getvalue())
         content_sha1=content_sha1.hexdigest()
         manifest=dict()
-        manifest=dict(timestamp=timestamp_str,metadata=self.metadata, sha1=content_sha1, blobs=file_list, size=len(content_block.getvalue()))
+        manifest=dict(timestamp=timestamp_str,metadata=self.cfs_metadata, sha1=content_sha1, blobs=file_list, size=len(content_block.getvalue()))
         # cfs_schema.validate(manifest)
         manifest_bytes=json.dumps(manifest).encode()
         manifest_length=len(manifest_bytes)
@@ -158,9 +165,9 @@ class CFS_Builder(object):
         assert isinstance(name, str)
         assert isinstance(metadata, dict)
         if mimetype is None:
-            mimetype=get_mimetype(val)
+            mimetype="/octet-stream"
 
-        validate_mimetype(mimetype)  # raises a ValueError Exception
+        #validate_mimetype(mimetype)  # raises a ValueError Exception
         self._content_bytes=b''  # blow away any file structure if it exists
         self._blobs[name]=CFS_Blob(name=name, content=val, mimetype=mimetype, metadata=metadata)
         return self
