@@ -19,10 +19,6 @@ from cfs.cfs_base import CFS_Base
 #x=mimetypes.
 
 
-
-    
-
-
 class CFS_Blob(object):
     blob:bytes
     def __init__(self, *, name:str, content:bytes, mimetype:str, metadata:dict=None):
@@ -95,6 +91,7 @@ class CFS_Builder(object):
     @staticmethod
     def wrap(cfs:CFS_Base):
         assert False, "NOT IMPLEMENTED"
+
     @property
     def cfs_metadata(self)->dict:
         return self._cfs_metadata
@@ -105,10 +102,8 @@ class CFS_Builder(object):
 
     def get_bytes(self, name)->bytes:
         return copy.copy(self._blobs[name].content) #raises an exception
-
     
     def build(self)->bytes:
-        
         timestamp= datetime.datetime.now() #.isoformat() #  arrow.utcnow()
         timestamp_str=timestamp.isoformat()
         self._cfs_metadata["timestamp"]=timestamp_str

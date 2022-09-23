@@ -3,8 +3,9 @@
 """
 
 import datetime
+from abc import ABC
 
-class CFS_Base(object):
+class CFS_Base(ABC):
     def __init__(self):
         assert False, "NOT IMPLEMENTED"
         pass
