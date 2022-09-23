@@ -1,6 +1,5 @@
-
-from cfs import CFS_Builder
-from cfs import CFS_Bytestream
+"""Test making a CFS object."""
+from cfs import CFS_Builder, CFS_Bytestream
 import hashlib
 import os
 import pytest 
@@ -37,7 +36,8 @@ def test_simple():
     blob_content=_rand_bytes()
     wf.add_blob(blob_path, blob_content) 
     assert wf.get_bytes(blob_path)==blob_content
-    wf_bytes = wf.as_bytes
+    print(dir(wf))
+    wf_bytes = wf.build()
     sha1=wf_bytes[3:23]
     all_content=wf_bytes[23:]
 
@@ -61,6 +61,23 @@ def test_simple():
 # def test_wrap():
 #     assert False
 
+def test_overwriting():
+
+    wf = CFS_Builder(metadata=None)
+    blob_path=_random_blob_path()
+    blob_content=_rand_bytes()
+    wf.add_blob(blob_path, blob_content) 
+    assert wf.get_bytes(blob_path)==blob_content
+    updated_blob_content=_rand_bytes()
+    wf.add_blob(blob_path, updated_blob_content) 
+    assert wf.get_bytes(blob_path)==updated_blob_content
+    assert wf.get_bytes(blob_path)!=blob_content
+
+    out=wf.build()
+    v2=CFS_Bytestream(file_buffer=out)
+    assert v2.get_file(file_path=blob_path) == updated_blob_content
+    assert v2.get_file(file_path=blob_path) != blob_content
+    
 def test_random_data():
     # genreate a random metadata object
     # genreate a CFS, containing a random number of files of random length containing random content

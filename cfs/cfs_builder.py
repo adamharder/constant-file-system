@@ -1,22 +1,12 @@
-# from util_content_hash import content_hash
-#from python.common.util_mimetype import get_mimetype, mimetypes,  validate_mimetype
-#from schemas.schema_aligned_cfs import metadata
-#from schemas.schema_floorplan_master_cfs import metadata_schema
-
-# from . import cfs_schema
-import copy
-import hashlib
-import io
-import json
-import struct
-# import arrow
-from typing import List
-import datetime
-import mimetypes
-
+"""Script that builds a CFS file"""
 from cfs.cfs_base import CFS_Base
-
-#x=mimetypes.
+from copy import copy
+from datetime import datetime
+from hashlib import sha1 as hashlib_sha1
+from io import BytesIO
+from json import dumps as json_dumps
+from struct import pack as struct_pack
+from typing import List
 
 
 class CFS_Blob(object):
@@ -28,9 +18,9 @@ class CFS_Blob(object):
             assert isinstance(mimetype, str)
         if metadata is not None:
             assert isinstance(metadata, dict)
-        self._content=copy.copy(content)
+        self._content=copy(content)
         self._name=name
-        self._sha1=hashlib.sha1()
+        self._sha1=hashlib_sha1()
         self._sha1.update(content)
         self._sha1=self._sha1.hexdigest()
         if mimetype is not None:
@@ -101,13 +91,14 @@ class CFS_Builder(object):
         return list(self._blobs.keys())
 
     def get_bytes(self, name)->bytes:
-        return copy.copy(self._blobs[name].content) #raises an exception
+        """Return the bytes of the blob located at name."""
+        return copy(self._blobs[name].content) #raises an exception
     
     def build(self)->bytes:
-        timestamp= datetime.datetime.now() #.isoformat() #  arrow.utcnow()
+        timestamp= datetime.now() #.isoformat() #  arrow.utcnow()
         timestamp_str=timestamp.isoformat()
         self._cfs_metadata["timestamp"]=timestamp_str
-        content_block=io.BytesIO()
+        content_block=BytesIO()
         blob_offsets={}
         file_list={}
         manifest={}
@@ -127,25 +118,25 @@ class CFS_Builder(object):
                 mimetype=blob.mimetype, 
                 size=blob_offsets[blob._sha1]['size'])
 
-        content_sha1=hashlib.sha1()
+        content_sha1=hashlib_sha1()
         content_sha1.update(content_block.getvalue())
         content_sha1=content_sha1.hexdigest()
         manifest=dict()
         manifest=dict(timestamp=timestamp_str,metadata=self.cfs_metadata, sha1=content_sha1, blobs=file_list, size=len(content_block.getvalue()))
         # cfs_schema.validate(manifest)
-        manifest_bytes=json.dumps(manifest).encode()
+        manifest_bytes=json_dumps(manifest).encode()
         manifest_length=len(manifest_bytes)
 
-        cfs_full_content = io.BytesIO()
-        cfs_full_content.write(struct.pack("I", int(timestamp.timestamp())))
-        cfs_full_content.write(struct.pack("I", manifest_length))
+        cfs_full_content = BytesIO()
+        cfs_full_content.write(struct_pack("I", int(timestamp.timestamp())))
+        cfs_full_content.write(struct_pack("I", manifest_length))
         cfs_full_content.write(manifest_bytes)
         cfs_full_content.write(content_block.getvalue())
 
-        outer_sha1=hashlib.sha1()
+        outer_sha1=hashlib_sha1()
         outer_sha1.update(cfs_full_content.getvalue())
 
-        output_str = io.BytesIO()
+        output_str = BytesIO()
         output_str.write(b"CFS")
         output_str.write(outer_sha1.digest())
         output_str.write(cfs_full_content.getvalue())
@@ -169,7 +160,7 @@ class CFS_Builder(object):
 
     def merge(self, rhs:'CFS_Builder')->'CFS_Builder':
         # merging consists of merging over all of the blobs in the rhs file system.
-        # exisiting blobs with the same name will be overwritten
+        # existing blobs with the same name will be overwritten
         # file system metadata from the rhs file will not be copied over
         for blob_path in rhs._blobs:
             rhs_blob=rhs._blobs[blob_path]

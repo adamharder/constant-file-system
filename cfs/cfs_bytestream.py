@@ -71,3 +71,6 @@ class CFS_Bytestream(CFS_Base):
             c_sha1.update(file_bytes)
             assert c_sha1.hexdigest()==sha1
         return file_bytes
+
+    def get_blob(self, blob_path, confirm=True):
+        return self.get_file(file_path=blob_path, confirm=confirm)

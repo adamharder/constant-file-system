@@ -1,16 +1,12 @@
+"""Read a CFS from a file."""
 
-
-# from util_content_hash import content_hash
-from datetime import datetime
-import hashlib
-import json
-import struct
-import binascii
-from pathlib import Path
+from binascii import hexlify
 from cfs.cfs_base import CFS_Base
-
-#from schemas.schema_aligned_cfs import metadata
-# this is an interface for the constant file system. it can be backed by a file on the filesystem, or a blobstore that supports http get range queries.
+from datetime import datetime
+from hashlib import sha1 as hashlib_sha1
+from json import loads as json_loads
+from pathlib import Path
+from struct import unpack as struct_unpack
 
 class CFS_File(CFS_Base):
     def __init__(self, file_path:Path):
@@ -22,17 +18,17 @@ class CFS_File(CFS_Base):
             print(magic_word)
             assert b'CFS' == magic_word
 
-            self._sha1 = binascii.hexlify(file_buffer.read(20))
+            self._sha1 = hexlify(file_buffer.read(20))
 
-            raw_ts = struct.unpack("I", file_buffer.read(4))[0]
+            raw_ts = struct_unpack("I", file_buffer.read(4))[0]
             self._timestamp = datetime.fromtimestamp(raw_ts)
 
 
             # self._timestamp = arrow.Arrow.fromtimestamp( struct.unpack("I", file_buffer.read(4))[0])
-            self._manifest_size =  struct.unpack("I", file_buffer.read(4))[0]
+            self._manifest_size =  struct_unpack("I", file_buffer.read(4))[0]
             manifest_bytes=file_buffer.read(self.manifest_size)
             assert(manifest_bytes[0]==ord('{'))
-            self._manifest=json.loads(manifest_bytes.decode())
+            self._manifest=json_loads(manifest_bytes.decode())
 
 
     @property
@@ -73,13 +69,6 @@ class CFS_File(CFS_Base):
 
     @property
     def blob_manifest(self):
-        # r={}
-
-        # for i in self.blobs:
-        #     blob=self.blobs[i]
-        #     print(blob.keys())
-        #     r[i]=dict(name=i, sha1=blob['sha1'], mimetype=blob['mimetype'], size=blob['size'], offset=)
-        # return r
         return self.blobs
 
 
@@ -104,9 +93,12 @@ class CFS_File(CFS_Base):
             file_bytes = file_buffer.read(length)
 
         if confirm:
-            c_sha1 = hashlib.sha1()
+            c_sha1 = hashlib_sha1()
             c_sha1.update(file_bytes)
             assert c_sha1.hexdigest()==sha1
         return file_bytes
+
+    def get_blob(self, blob_path, confirm=True):
+        return self.get_file(file_path=blob_path, confirm=confirm)
 
 

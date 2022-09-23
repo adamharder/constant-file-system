@@ -1,42 +1,47 @@
 """
-    Constant File System base class. All readable CFS implentations should inherit from this.
+    Constant File System base class. All readable CFS implementations should inherit from this.
 """
 
-import datetime
-from abc import ABC
+from datetime import datetime
+from abc import ABC, abstractmethod
 
 class CFS_Base(ABC):
     def __init__(self):
         assert False, "NOT IMPLEMENTED"
         pass
 
-
     @property
+    @abstractmethod
     def sha1(self)->str:
         assert False, "NOT IMPLEMENTED"
         pass
 
     @property
+    @abstractmethod
     def manifest_size(self)->int:
         assert False, "NOT IMPLEMENTED"
         pass
 
     @property
+    @abstractmethod
     def timestamp(self)->datetime:
         assert False, "NOT IMPLEMENTED"
         pass
 
     @property
+    @abstractmethod
     def content_offset(self)->int:
         assert False, "NOT IMPLEMENTED"
         pass
 
     @property
+    @abstractmethod
     def metadata(self)->dict:
         assert False, "NOT IMPLEMENTED"
         pass
 
     @property
+    @abstractmethod
     def file_list(self)->list:
         return self.blob_paths
 
@@ -46,6 +51,7 @@ class CFS_Base(ABC):
         pass
 
     @property
+    #@abstractmethod
     def blob_paths(self)->list:
         assert False, "NOT IMPLEMENTED"
         pass
@@ -73,5 +79,4 @@ class CFS_Base(ABC):
     def get_blob(self, blob_path:str, confirm:bool=True)->bytes:
         assert False, "NOT IMPLEMENTED"
         pass
-
 

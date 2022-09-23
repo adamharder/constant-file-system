@@ -4,7 +4,7 @@ The constant file system is a micro-filesystem that flattens a collection of fil
 
 You can think of a CFS as a flat, read-only filesystem without folders, file permissions or timestamps.
 
-In keeping with the blobstore concept, the files are
+In keeping with the blobstore concept, the files exists as blobs of bytes at a named location.
 
 The format is as follows:
 
@@ -25,7 +25,7 @@ The format is as follows:
    * Valriable length JSON document
    * Details below
 6. Blob Content
-   * Valriable length block of bytes 
+   * Variable length block of bytes.
    * The content of the files as a single block of bytes
 
    * 6. : the manifest as a json document
@@ -46,24 +46,6 @@ file blob manifest entry
 ```
 
 
-the file contents
-thus the first 32 bytes of a maptiles file should be :
-0x0x434653  ######################################## ######## ######## 7B ->  "CFS####{"
-```
+Example CFS file contents:
+`CFS[sha256 - 20 bytes][4-byte timestamp][length of manifest][manifest json string][file1][file2][file3]...`
 
-
-timestamp:
-datetime.now().timestamp() -> float
-datetime.fromtimestamp(datetime.now().timestamp()) -> datetime
-
-arrow.Arrow.fromtimestamp(int(arrow.utcnow().timestamp()))
-
-to unix timestamp int: int(arrow.utcnow().timestamp())
-from unix timestamp: arrow.Arrow.fromtimestamp(int_val)
-
-header:
-CFS[4-byte timestamp][sha256 - 20 bytes][length of manifest][manifest string][file1][file2][file3]...
-
-sha1 encoding:
-hashlib.sha1().digest()    -> b'\xda9\xa3\xee^kK\r2U\xbf\xef\x95`\x18\x90\xaf\xd8\x07\t'
-hashlib.sha1().hexdigest() -> 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
